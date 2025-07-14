@@ -1,0 +1,1 @@
+mongodb+srv://ashinjosephkuriyalanickal:tbFLYRDTdeJGdYGb@cluster0.un4qdtb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0 - MOGO URI
