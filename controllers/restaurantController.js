@@ -1,9 +1,25 @@
-// controllers/restaurantController.js
 const Restaurant = require('../models/Restaurant');
 
-exports.createRestaurant = async (req, res) => {
+// ✅ Create or Update restaurant (restaurant login)
+exports.createOrUpdateRestaurant = async (req, res) => {
   try {
-    const restaurant = new Restaurant(req.body);
+    const existing = await Restaurant.findOne({ ownerId: req.user.userId });
+
+    if (existing) {
+      // Update if exists
+      const updated = await Restaurant.findOneAndUpdate(
+        { ownerId: req.user.userId },
+        { ...req.body, status: 'pending' },
+        { new: true }
+      );
+      return res.status(200).json(updated);
+    }
+
+    // Else, create new
+    const restaurant = new Restaurant({
+      ...req.body,
+      ownerId: req.user.userId
+    });
     await restaurant.save();
     res.status(201).json(restaurant);
   } catch (err) {
@@ -11,15 +27,41 @@ exports.createRestaurant = async (req, res) => {
   }
 };
 
-exports.getAllRestaurants = async (req, res) => {
+// ✅ Get all pending restaurants (admin)
+exports.getPendingRestaurants = async (req, res) => {
   try {
-    const restaurants = await Restaurant.find();
-    res.status(200).json(restaurants);
+    const pending = await Restaurant.find({ status: 'pending' });
+    res.status(200).json(pending);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+// ✅ Approve restaurant (admin)
+exports.approveRestaurant = async (req, res) => {
+  try {
+    const updated = await Restaurant.findByIdAndUpdate(
+      req.params.id,
+      { status: 'approved' },
+      { new: true }
+    );
+    res.status(200).json({ message: 'Restaurant approved', restaurant: updated });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ✅ Get all approved restaurants (frontend use)
+exports.getApprovedRestaurants = async (req, res) => {
+  try {
+    const approved = await Restaurant.find({ status: 'approved' });
+    res.status(200).json(approved);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ✅ Admin can still delete
 exports.deleteRestaurant = async (req, res) => {
   try {
     await Restaurant.findByIdAndDelete(req.params.id);
