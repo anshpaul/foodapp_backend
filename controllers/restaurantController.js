@@ -73,9 +73,11 @@ exports.deleteRestaurant = async (req, res) => {
 exports.getMyRestaurant = async (req, res) => {
   try {
     const restaurant = await Restaurant.findOne({ ownerId: req.user.userId });
+
     if (!restaurant) {
-      return res.status(200).json({ exists: false });
+      return res.status(404).json({ exists: false }); // 🔁 Important: 404 when not exists
     }
+
     return res.status(200).json({ exists: true, restaurant });
   } catch (err) {
     res.status(500).json({ message: err.message });
