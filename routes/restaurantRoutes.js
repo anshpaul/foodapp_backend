@@ -5,13 +5,17 @@ const {
   getPendingRestaurants,
   approveRestaurant,
   deleteRestaurant,
-  getApprovedRestaurants
+  getApprovedRestaurants,
+  getMyRestaurant // ✅ New controller added here
 } = require('../controllers/restaurantController');
 
 const { protect, isAdmin } = require('../middleware/auth');
 
 // Restaurant creates or updates their profile
 router.post('/', protect, createOrUpdateRestaurant);
+
+// ✅ Check if restaurant already exists for this restaurant
+router.get('/me', protect, getMyRestaurant);
 
 // Admin actions
 router.get('/pending', protect, isAdmin, getPendingRestaurants);

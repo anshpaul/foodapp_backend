@@ -68,3 +68,16 @@ exports.deleteRestaurant = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// ✅ Check if restaurant exists for logged-in restaurant user
+exports.getMyRestaurant = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findOne({ ownerId: req.user.userId });
+    if (!restaurant) {
+      return res.status(200).json({ exists: false });
+    }
+    return res.status(200).json({ exists: true, restaurant });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
