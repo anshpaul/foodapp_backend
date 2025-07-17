@@ -6,15 +6,24 @@ const restaurantSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  name: { type: String, required: true },
-  imageUrl: { type: String },
+  title: { type: String, required: true }, // Restaurant Name
   description: { type: String },
-  dish: { type: String },
-  price: { type: Number },
-  time: { type: String },
+  address: { type: String },
   distance: { type: String },
-  rating: { type: String },
-  offer: { type: String },
+  categories: { type: String },
+  fssai: { type: String },
+  phone: { type: String },
+  menuImage: { type: String },
+
+  dishes: [
+    {
+      name: { type: String },
+      description: { type: String },
+      price: { type: Number },
+      image: { type: String }
+    }
+  ],
+
   status: {
     type: String,
     enum: ['pending', 'approved'],

@@ -6,7 +6,6 @@ exports.createOrUpdateRestaurant = async (req, res) => {
     const existing = await Restaurant.findOne({ ownerId: req.user.userId });
 
     if (existing) {
-      // Update if exists
       const updated = await Restaurant.findOneAndUpdate(
         { ownerId: req.user.userId },
         { ...req.body, status: 'pending' },
@@ -15,7 +14,6 @@ exports.createOrUpdateRestaurant = async (req, res) => {
       return res.status(200).json(updated);
     }
 
-    // Else, create new
     const restaurant = new Restaurant({
       ...req.body,
       ownerId: req.user.userId
@@ -61,7 +59,7 @@ exports.getApprovedRestaurants = async (req, res) => {
   }
 };
 
-// ✅ Admin can still delete
+// ✅ Admin can delete restaurant
 exports.deleteRestaurant = async (req, res) => {
   try {
     await Restaurant.findByIdAndDelete(req.params.id);
