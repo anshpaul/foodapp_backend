@@ -6,7 +6,7 @@ const restaurantSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  title: { type: String, required: true }, // Restaurant Name
+  name: { type: String, required: true }, // Changed from `title` to `name`
   description: { type: String },
   address: { type: String },
   distance: { type: String },
