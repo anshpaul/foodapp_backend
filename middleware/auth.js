@@ -13,7 +13,10 @@ const protect = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Contains _id, role, etc.
+    req.user = {
+      userId: decoded.id,    // ✅ Ensures req.user.userId exists
+      role: decoded.role     // ✅ Optional: used in isAdmin
+    };
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Invalid or expired token' });
