@@ -14,8 +14,8 @@ const protect = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = {
-      userId: decoded.id,    // ✅ Ensures req.user.userId exists
-      role: decoded.role     // ✅ Optional: used in isAdmin
+      userId: decoded.userId,    // ✅ Fixed: Use decoded.userId instead of decoded.id
+      role: decoded.role
     };
     next();
   } catch (err) {
