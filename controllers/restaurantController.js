@@ -83,3 +83,26 @@ exports.getMyRestaurant = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+// Adding Dishes 
+exports.addDish = async (req, res) => {
+  try {
+    const { name, description, price, image } = req.body;
+    const restaurant = await Restaurant.findById(req.params.id);
+
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found' });
+    }
+
+    // Check if the authenticated user is the restaurant owner
+    if (restaurant.ownerId.toString() !== req.user.userId) {
+      return res.status(403).json({ message: 'Access denied: Only the restaurant owner can add dishes' });
+    }
+
+    restaurant.dishes.push({ name, description, price, image });
+    await restaurant.save();
+
+    res.status(201).json({ message: 'Dish added', restaurant });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
