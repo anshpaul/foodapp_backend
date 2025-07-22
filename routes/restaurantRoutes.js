@@ -27,7 +27,7 @@ router.delete('/:id', protect, isAdmin, deleteRestaurant);
 // ✅ Public route for frontend (show approved restaurants only)
 router.get('/approved', getApprovedRestaurants);
 
-// ✅ Restaurant owner adds a dish
+// ✅ Restaurant owner adds a dish with image
 router.post('/:id/dishes', protect, addDish);
 
 module.exports = router;

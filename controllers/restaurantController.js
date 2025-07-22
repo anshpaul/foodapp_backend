@@ -1,4 +1,17 @@
 const Restaurant = require('../models/Restaurant');
+const multer = require('multer');
+
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Create an 'uploads' folder in your project root
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 // ✅ Create or Update restaurant (restaurant login)
 exports.createOrUpdateRestaurant = async (req, res) => {
@@ -75,7 +88,7 @@ exports.getMyRestaurant = async (req, res) => {
     const restaurant = await Restaurant.findOne({ ownerId: req.user.userId });
 
     if (!restaurant) {
-      return res.status(404).json({ exists: false }); // 🔁 Important: 404 when not exists
+      return res.status(404).json({ exists: false });
     }
 
     return res.status(200).json({ exists: true, restaurant });
@@ -83,26 +96,31 @@ exports.getMyRestaurant = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-// Adding Dishes 
-exports.addDish = async (req, res) => {
-  try {
-    const { name, description, price, image } = req.body;
-    const restaurant = await Restaurant.findById(req.params.id);
 
-    if (!restaurant) {
-      return res.status(404).json({ message: 'Restaurant not found' });
+// ✅ Restaurant owner adds a dish with image
+exports.addDish = [
+  upload.single('image'), // Middleware to handle single file upload
+  async (req, res) => {
+    try {
+      const { name, description, price } = req.body;
+      const restaurant = await Restaurant.findById(req.params.id);
+
+      if (!restaurant) {
+        return res.status(404).json({ message: 'Restaurant not found' });
+      }
+
+      // Check if the authenticated user is the restaurant owner
+      if (restaurant.ownerId.toString() !== req.user.userId) {
+        return res.status(403).json({ message: 'Access denied: Only the restaurant owner can add dishes' });
+      }
+
+      const imagePath = req.file ? req.file.path : null;
+      restaurant.dishes.push({ name, description, price, image: imagePath });
+      await restaurant.save();
+
+      res.status(201).json({ message: 'Dish added', restaurant });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
     }
-
-    // Check if the authenticated user is the restaurant owner
-    if (restaurant.ownerId.toString() !== req.user.userId) {
-      return res.status(403).json({ message: 'Access denied: Only the restaurant owner can add dishes' });
-    }
-
-    restaurant.dishes.push({ name, description, price, image });
-    await restaurant.save();
-
-    res.status(201).json({ message: 'Dish added', restaurant });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
   }
-};
+];
