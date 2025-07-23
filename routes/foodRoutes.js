@@ -2,15 +2,47 @@
 const express = require('express');
 const router = express.Router();
 const Food = require('../models/Food');
-const { protect, isAdmin } = require('../middleware/auth');
+const multer = require('multer');
+const { protect } = require('../middleware/auth');
 
-// ✅ Add new food
-router.post('/', protect, isAdmin, async (req, res) => {
-  const { restaurantId, name, imageUrl, price, description } = req.body;
+// Configure multer for file upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/'); // Ensure 'uploads' folder exists
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// ✅ Add new food (only for restaurant owners)
+router.post('/', protect, upload.single('image'), async (req, res) => {
   try {
-    const food = new Food({ restaurantId, name, imageUrl, price, description });
+    const { name, description, price, restaurantId } = req.body;
+
+    // Validate restaurant ownership
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant not found' });
+    }
+    if (restaurant.ownerId.toString() !== req.user.userId || req.user.role !== 'restaurant') {
+      return res.status(403).json({ message: 'Access denied: Only the restaurant owner can add food items' });
+    }
+
+    const imagePath = req.file ? req.file.path : null;
+    const food = new Food({
+      name,
+      description,
+      price: parseFloat(price),
+      restaurantId,
+      image: imagePath,
+      inStock: true
+    });
     await food.save();
-    res.status(201).json(food);
+
+    res.status(201).json({ message: 'Food item added', food });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -32,7 +64,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// ✅ Delete food
+// ✅ Delete food (only for admins)
 router.delete('/:id', protect, isAdmin, async (req, res) => {
   try {
     await Food.findByIdAndDelete(req.params.id);

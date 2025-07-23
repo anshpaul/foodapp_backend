@@ -1,4 +1,5 @@
 const Restaurant = require('../models/Restaurant');
+const Food = require('../models/Food'); // Assume a Food model exists
 const multer = require('multer');
 
 // Configure multer for file upload
@@ -97,28 +98,35 @@ exports.getMyRestaurant = async (req, res) => {
   }
 };
 
-// ✅ Restaurant owner adds a dish with image
-exports.addDish = [
+// ✅ Restaurant owner adds a food item
+exports.addFoodItem = [
   upload.single('image'), // Middleware to handle single file upload
   async (req, res) => {
     try {
-      const { name, description, price } = req.body;
-      const restaurant = await Restaurant.findById(req.params.id);
+      const { name, description, price, restaurantId } = req.body;
+      const restaurant = await Restaurant.findById(restaurantId);
 
       if (!restaurant) {
         return res.status(404).json({ message: 'Restaurant not found' });
       }
 
       // Check if the authenticated user is the restaurant owner
-      if (restaurant.ownerId.toString() !== req.user.userId) {
-        return res.status(403).json({ message: 'Access denied: Only the restaurant owner can add dishes' });
+      if (restaurant.ownerId.toString() !== req.user.userId || req.user.role !== 'restaurant') {
+        return res.status(403).json({ message: 'Access denied: Only the restaurant owner can add food items' });
       }
 
       const imagePath = req.file ? req.file.path : null;
-      restaurant.dishes.push({ name, description, price, image: imagePath });
-      await restaurant.save();
+      const food = new Food({
+        name,
+        description,
+        price: parseFloat(price),
+        restaurantId,
+        image: imagePath,
+        inStock: true
+      });
+      await food.save();
 
-      res.status(201).json({ message: 'Dish added', restaurant });
+      res.status(201).json({ message: 'Food item added', food });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }

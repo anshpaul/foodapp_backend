@@ -8,7 +8,7 @@ const {
   deleteRestaurant,
   getApprovedRestaurants,
   getMyRestaurant,
-  addDish,
+  addFoodItem,
 } = require('../controllers/restaurantController');
 
 const { protect, isAdmin } = require('../middleware/auth');
@@ -27,7 +27,7 @@ router.delete('/:id', protect, isAdmin, deleteRestaurant);
 // ✅ Public route for frontend (show approved restaurants only)
 router.get('/approved', getApprovedRestaurants);
 
-// ✅ Restaurant owner adds a dish with image
-router.post('/:id/dishes', protect, addDish);
+// ✅ Restaurant owner adds a food item
+router.post('/foods', protect, addFoodItem);
 
 module.exports = router;
