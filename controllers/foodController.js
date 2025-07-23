@@ -5,7 +5,7 @@ const Restaurant = require('../models/Restaurant'); // Adjust path as needed
 // Create new food item
 const createFood = async (req, res) => {
   try {
-    const { name, description, price, category, imageUrl } = req.body;
+    const { name, description, price, category } = req.body;
 
     // For restaurant owners, use their restaurant ID
     let restaurantId = req.restaurantId;
@@ -21,14 +21,18 @@ const createFood = async (req, res) => {
       });
     }
 
+    // Handle image upload from multer
+    const imageUrl = req.file ? req.file.path : null;
+
     const food = new Food({
       name,
       description,
-      price,
+      price: parseFloat(price), // Ensure price is a number
       category,
-      imageUrl,
+      imageUrl, // Use imageUrl for consistency with model
       restaurantId,
-      createdBy: req.user.userId
+      createdBy: req.user.userId,
+      inStock: true // Default to in stock
     });
 
     await food.save();
@@ -120,19 +124,28 @@ const getFoodById = async (req, res) => {
 // Update food item
 const updateFood = async (req, res) => {
   try {
-    const { name, description, price, category, imageUrl, inStock } = req.body;
+    const { name, description, price, category, inStock } = req.body;
+
+    // Handle image upload from multer
+    const imageUrl = req.file ? req.file.path : undefined;
+
+    const updateData = {
+      name,
+      description,
+      price: parseFloat(price), // Ensure price is a number
+      category,
+      inStock,
+      updatedAt: Date.now()
+    };
+
+    // Only include imageUrl if a new file is uploaded
+    if (imageUrl) {
+      updateData.imageUrl = imageUrl;
+    }
 
     const food = await Food.findByIdAndUpdate(
       req.params.id,
-      {
-        name,
-        description,
-        price,
-        category,
-        imageUrl,
-        inStock,
-        updatedAt: Date.now()
-      },
+      updateData,
       { new: true, runValidators: true }
     );
 
