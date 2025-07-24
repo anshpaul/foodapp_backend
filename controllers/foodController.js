@@ -5,15 +5,11 @@ const Restaurant = require('../models/Restaurant');
 const createFood = async (req, res) => {
   try {
     const { name, description, price, category } = req.body;
+    let restaurantId = req.restaurantId || req.body.restaurantId;
 
-    let restaurantId = req.restaurantId;
-
-    if (req.user.role === 'admin' && req.body.restaurantId) {
-      restaurantId = req.body.restaurantId;
-      const restaurant = await Restaurant.findById(restaurantId);
-      if (!restaurant) {
-        return res.status(404).json({ message: 'Restaurant not found' });
-      }
+    // Validate required fields
+    if (!name || !price || !category) {
+      return res.status(400).json({ message: 'Name, price, and category are required' });
     }
 
     if (!restaurantId) {
