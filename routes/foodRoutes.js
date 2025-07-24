@@ -1,27 +1,26 @@
-// routes/foodRoutes.js
 const express = require('express');
 const router = express.Router();
-const Food = require('../models/Food');
-const Restaurant = require('../models/Restaurant');
 const multer = require('multer');
-const { 
-  protect, 
-  isAdmin, 
-  isRestaurantOwnerOrAdmin, 
-  canAccessFoodItem 
+
+const {
+  protect,
+  isAdmin,
+  isRestaurantOwnerOrAdmin,
+  canAccessFoodItem
 } = require('../middleware/auth');
-const { 
-  createFood, 
-  getAllFoods, 
-  getMyFoods, 
-  getFoodById, 
-  updateFood, 
-  deleteFood, 
+
+const {
+  createFood,
+  getAllFoods,
+  getMyFoods,
+  getFoodById,
+  updateFood,
+  deleteFood,
   updateFoodStock,
-  getAllFoodsForAdmin 
+  getAllFoodsForAdmin
 } = require('../controllers/foodController');
 
-// Configure multer for file upload
+// ✅ Configure Multer for file upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/');
@@ -33,28 +32,30 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Add new food (for restaurant owners and admins)
+// ✅ Routes
+
+// Add food (restaurant owners & admin)
 router.post('/', protect, isRestaurantOwnerOrAdmin, upload.single('image'), createFood);
 
-// Get all foods (public route for customers)
+// Public: get all available foods
 router.get('/', getAllFoods);
 
-// Get foods for the authenticated restaurant owner or admin
+// Restaurant/Admin: get own foods
 router.get('/my-foods', protect, isRestaurantOwnerOrAdmin, getMyFoods);
 
-// Get single food item
+// Get single food by ID
 router.get('/:id', protect, getFoodById);
 
-// Update food item (for restaurant owners and admins)
+// Update food item
 router.put('/:id', protect, canAccessFoodItem, upload.single('image'), updateFood);
 
-// Delete food (for restaurant owners and admins)
+// Delete food
 router.delete('/:id', protect, canAccessFoodItem, deleteFood);
 
-// Toggle food stock status
+// Toggle in-stock status
 router.patch('/:id/stock', protect, canAccessFoodItem, updateFoodStock);
 
-// Admin-only: Get all foods for admin dashboard
+// Admin-only: get all foods
 router.get('/admin/all', protect, isAdmin, getAllFoodsForAdmin);
 
 module.exports = router;
