@@ -10,8 +10,9 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: 'zomato',
-    allowed_formats: ['jpg', 'png'],
+    folder: 'zomato', // You can rename this folder if needed
+    allowed_formats: ['jpg', 'png', 'jpeg'], // include 'jpeg'
+    transformation: [{ width: 500, height: 500, crop: 'limit' }], // Optional resize
   },
 });
 

@@ -7,7 +7,6 @@ const createFood = async (req, res) => {
     const { name, description, price, category } = req.body;
     let restaurantId = req.restaurantId || req.body.restaurantId;
 
-    // Validate required fields
     if (!name || !price || !category) {
       return res.status(400).json({ message: 'Name, price, and category are required' });
     }
@@ -25,7 +24,7 @@ const createFood = async (req, res) => {
       return res.status(403).json({ message: 'Access denied: Only the restaurant owner can add food items' });
     }
 
-    const imageUrl = req.file ? req.file.path : null;
+    const imageUrl = req.file ? req.file.path : null; // ✅ this will now be a Cloudinary URL
 
     const food = new Food({
       name,
@@ -94,7 +93,10 @@ const getFoodById = async (req, res) => {
 const updateFood = async (req, res) => {
   try {
     const updatedData = { ...req.body };
-    if (req.file) updatedData.imageUrl = req.file.path;
+
+    if (req.file) {
+      updatedData.imageUrl = req.file.path; // ✅ new Cloudinary URL
+    }
 
     const updatedFood = await Food.findByIdAndUpdate(req.params.id, updatedData, { new: true });
     if (!updatedFood) return res.status(404).json({ message: 'Food not found' });
@@ -104,6 +106,7 @@ const updateFood = async (req, res) => {
     res.status(500).json({ message: 'Error updating food', error: error.message });
   }
 };
+
 
 // ✅ Delete food item
 const deleteFood = async (req, res) => {
