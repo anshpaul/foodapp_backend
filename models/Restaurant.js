@@ -13,7 +13,7 @@ const restaurantSchema = new mongoose.Schema({
   categories: { type: String },
   fssai: { type: String },
   phone: { type: String },
-  menuImage: { type: String },
+  imageUrl: { type: String }, // <-- Use this field for the restaurant image
 
   dishes: [
     {
